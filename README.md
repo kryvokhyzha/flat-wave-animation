@@ -9,6 +9,8 @@ Task is:
 realistic as possible)
 2. to optimize it for multi-core environment (_optional_)
 
+<img src="https://raw.githubusercontent.com/kryvokhyzha/flat-wave-animation/main/img/task.jpg?token=AFID7QKLS3HFA27KDB4C2RDANROZ4">
+
 ## Basic requirements
 0. The result should be a Win64 application (In C or C++ optimally, Java / Python are also acceptable).
 1. It should get A background image as an input (BMP, JPEG, etc).
