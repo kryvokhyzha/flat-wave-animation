@@ -1,4 +1,4 @@
-# parallel-and-distributed-computing
+# flat-wave-animation
 This repository contains flat surface "wave" animation mini-project.
 
 ## Assignment
