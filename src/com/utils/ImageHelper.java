@@ -60,4 +60,15 @@ public class ImageHelper {
     }
     this.image = image;
   }
+
+  public static BufferedImage array3dToImage(int[][][] data, int width, int height) {
+    BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+    for (int x = 0; x < width; x++) {
+      for (int y = 0; y < height; y++) {
+        Color c = new Color(data[x][y][0], data[x][y][1], data[x][y][2]);
+        image.setRGB(x, y, c.getRGB());
+      }
+    }
+    return image;
+  }
 }

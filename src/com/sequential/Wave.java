@@ -1,4 +1,4 @@
-package com.components;
+package com.sequential;
 
 public class Wave {
   private final int[] xPoints;
@@ -42,7 +42,6 @@ public class Wave {
   }
 
   public static int waveFunction(int x, int c, double angel) {
-    int y = (int) (-x * Math.tan(Math.toRadians(angel)) + c);
-    return y;
+    return (int) (-x * Math.tan(Math.toRadians(angel)) + c);
   }
 }
