@@ -12,8 +12,13 @@ public class ImageHelper {
   private final int width;
   private final int height;
 
-  public ImageHelper(String path) throws IOException {
-    this.image = ImageIO.read(new File(String.valueOf(Paths.get(path))));
+  public ImageHelper(String path) {
+    try {
+      this.image = ImageIO.read(new File(String.valueOf(Paths.get(path))));
+    } catch (IOException e) {
+      this.image = new BufferedImage(600, 400, BufferedImage.TYPE_INT_RGB);
+      e.printStackTrace();
+    }
     this.width = this.image.getWidth();
     this.height = this.image.getHeight();
   }
