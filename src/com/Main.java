@@ -7,9 +7,5 @@ public class Main {
     GeneralFrame frame = new GeneralFrame();
     frame.setSize(800, 800);
     frame.setVisible(true);
-
-    // WaveAnimation wa = new WaveAnimation(frame.getCanvasLabel(), frame.getImageHelper(),
-    // frame.getScoreLabel());
-    // wa.start();
   }
 }

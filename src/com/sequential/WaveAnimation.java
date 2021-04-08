@@ -3,6 +3,8 @@ package com.sequential;
 import com.components.GeneralFrame;
 import com.components.ScoreLabel;
 import com.utils.ImageHelper;
+import java.awt.image.BufferedImage;
+import java.util.ArrayList;
 import java.util.HashMap;
 import javax.swing.*;
 
@@ -30,6 +32,38 @@ public class WaveAnimation extends Thread {
         "bottom-right", new int[] {imageHelper.getWidth() - 1, imageHelper.getHeight() - 1});
   }
 
+  public static BufferedImage distortion(
+      int[][][] array3d, int width, int height, ArrayList<int[]> points) {
+    for (int y = 0; y < height; y++) {
+      for (int x = 0; x < width; x++) {
+        double k = 1.02;
+        boolean skipPoint = true;
+
+        for (int[] point : points) {
+          if (Math.pow(y - point[1], 2) + Math.pow(x - point[0], 2) < 100) {
+            skipPoint = false;
+            break;
+          }
+        }
+
+        /*
+        r = (x - 0.5)^2 + (y - 0.5)^2
+        n = Bulge factor (default = 0)
+
+          Set
+          x' = r^n * (x - 0.5) + 0.5
+          y' = r^n * (y - 0.5) + 0.5*/
+        if (!skipPoint && x * k < width && y * k < height) {
+          array3d[(int) (x * k)][(int) (y * k)][0] = array3d[x][y][0];
+          array3d[(int) (x * k)][(int) (y * k)][1] = array3d[x][y][1];
+          array3d[(int) (x * k)][(int) (y * k)][2] = array3d[x][y][2];
+        }
+      }
+    }
+
+    return ImageHelper.array3dToImage(array3d, width, height);
+  }
+
   private HashMap<String, int[]> getRandomCornerPixel() {
     short index = (short) Math.round(Math.random() * 3);
 
@@ -53,16 +87,12 @@ public class WaveAnimation extends Thread {
       double tan = Math.tan(Math.toRadians(angel));
       switch (corner) {
         case "top-left":
+        case "bottom-right":
           c = (int) (pixels[1] + pixels[0] * tan);
           break;
         case "top-right":
-          c = (int) (pixels[1] - pixels[0] * tan);
-          break;
         case "bottom-left":
           c = (int) (pixels[1] - pixels[0] * tan);
-          break;
-        case "bottom-right":
-          c = (int) (pixels[1] + pixels[0] * tan);
           break;
       }
 
@@ -74,7 +104,8 @@ public class WaveAnimation extends Thread {
         int[][][] img3d = imageHelper.get3dArray();
         this.isPassFinish = true;
 
-        for (double x = 0; x < imageHelper.getWidth(); x += 0.2) {
+        ArrayList<int[]> points = new ArrayList<>();
+        for (double x = 0; x < imageHelper.getWidth(); x += 7) {
           int yCurrent = Wave.waveFunction(x, c, angel, corner);
           int xCurrent = (int) Math.round(x);
           if (yCurrent < 0
@@ -84,27 +115,27 @@ public class WaveAnimation extends Thread {
 
           this.isPassFinish = false;
 
-          img3d[xCurrent][yCurrent][0] = 255;
-          img3d[xCurrent][yCurrent][1] = 0;
-          img3d[xCurrent][yCurrent][2] = 0;
+          // try to normalize each color (RGB) in some borders (with some border-width)
+          // distortion
+          // img3d[xCurrent][yCurrent][0] = 255;
+          // img3d[xCurrent][yCurrent][1] = 0;
+          // img3d[xCurrent][yCurrent][2] = 0;
+
+          points.add(new int[] {xCurrent, yCurrent});
         }
 
-        jLabel.setIcon(
-            new ImageIcon(
-                ImageHelper.array3dToImage(
-                    img3d, imageHelper.getWidth(), imageHelper.getHeight())));
+        BufferedImage blurred =
+            distortion(img3d, imageHelper.getWidth(), imageHelper.getHeight(), points);
+
+        jLabel.setIcon(new ImageIcon(blurred));
         frame.updateCanvas();
 
         switch (corner) {
           case "top-left":
-            c += 1;
-            break;
           case "top-right":
             c += 1;
             break;
           case "bottom-left":
-            c -= 1;
-            break;
           case "bottom-right":
             c -= 1;
             break;
@@ -124,9 +155,9 @@ public class WaveAnimation extends Thread {
 
   public void stopAnimation() {
     System.out.println("Animation is stopped!");
-    this.scoreLabel.setScore(0);
     this.scoreLabel.setCorner("top-left");
     this.scoreLabel.setAngel(45);
+    this.scoreLabel.setScore(0);
     this.jLabel.setIcon(new ImageIcon(this.imageHelper.getImage()));
     this.frame.updateCanvas();
   }
@@ -137,7 +168,6 @@ public class WaveAnimation extends Thread {
 
   @Override
   public void run() {
-    System.out.println(Thread.currentThread().getName());
     startAnimation();
   }
 }
