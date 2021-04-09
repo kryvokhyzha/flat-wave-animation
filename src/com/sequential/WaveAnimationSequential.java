@@ -3,7 +3,7 @@ package com.sequential;
 import com.components.GeneralFrame;
 import com.components.ScoreLabel;
 import com.utils.ImageHelper;
-import com.utils.Wave;
+import com.utils.WaveFunction;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -108,7 +108,7 @@ public class WaveAnimationSequential extends Thread {
 
         ArrayList<int[]> points = new ArrayList<>();
         for (double x = 0; x < imageHelper.getWidth(); x += 7) {
-          int yCurrent = Wave.waveFunction(x, c, angel, corner);
+          int yCurrent = WaveFunction.getLinearValue(x, c, angel, corner);
           int xCurrent = (int) Math.round(x);
           if (yCurrent < 0
               || yCurrent >= imageHelper.getHeight()

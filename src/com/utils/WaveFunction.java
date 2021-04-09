@@ -1,10 +1,10 @@
 package com.utils;
 
-public class Wave {
+public class WaveFunction {
 
-  public Wave() {}
+  public WaveFunction() {}
 
-  public static int waveFunction(double x, int c, double angel, String corner) {
+  public static int getLinearValue(double x, int c, double angel, String corner) {
     double tan = Math.tan(Math.toRadians(angel));
     int result = 0;
     switch (corner) {
@@ -21,7 +21,7 @@ public class Wave {
     return result;
   }
 
-  public static int[] waveFunctionParabola(double x, int c, double angel, String corner) {
+  public static int[] getSquareValue(double x, int c, double angel, String corner) {
     angel = Math.toRadians(angel);
     double y1 = -x * x * 0.001 + c;
     double y2 = x * x * 0.001 + c;
