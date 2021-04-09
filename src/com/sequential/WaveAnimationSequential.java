@@ -3,12 +3,15 @@ package com.sequential;
 import com.components.GeneralFrame;
 import com.components.ScoreLabel;
 import com.utils.ImageHelper;
+import com.utils.Wave;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Random;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.*;
 
-public class WaveAnimation extends Thread {
+public class WaveAnimationSequential extends Thread {
   private final GeneralFrame frame;
   private final JLabel jLabel;
   private final ImageHelper imageHelper;
@@ -16,7 +19,11 @@ public class WaveAnimation extends Thread {
   private final HashMap<String, int[]> cornerPixels;
   private boolean isPassFinish = false;
 
-  public WaveAnimation(
+  public static int delayValue, distortionRadiusValueSquare;
+
+  public static final AtomicBoolean stopAnimationFlag = new AtomicBoolean(true);
+
+  public WaveAnimationSequential(
       GeneralFrame frame, JLabel jLabel, ImageHelper imageHelper, ScoreLabel scoreLabel) {
     this.frame = frame;
     this.jLabel = jLabel;
@@ -32,31 +39,26 @@ public class WaveAnimation extends Thread {
         "bottom-right", new int[] {imageHelper.getWidth() - 1, imageHelper.getHeight() - 1});
   }
 
-  public static BufferedImage distortion(
+  public BufferedImage distortion(
       int[][][] array3d, int width, int height, ArrayList<int[]> points) {
+    Random random = new Random();
     for (int y = 0; y < height; y++) {
       for (int x = 0; x < width; x++) {
-        double k = 1.02;
         boolean skipPoint = true;
 
         for (int[] point : points) {
-          if (Math.pow(y - point[1], 2) + Math.pow(x - point[0], 2) < 100) {
+          if (Math.pow(y - point[1], 2) + Math.pow(x - point[0], 2) < distortionRadiusValueSquare) {
             skipPoint = false;
             break;
           }
         }
 
-        /*
-        r = (x - 0.5)^2 + (y - 0.5)^2
-        n = Bulge factor (default = 0)
-
-          Set
-          x' = r^n * (x - 0.5) + 0.5
-          y' = r^n * (y - 0.5) + 0.5*/
-        if (!skipPoint && x * k < width && y * k < height) {
-          array3d[(int) (x * k)][(int) (y * k)][0] = array3d[x][y][0];
-          array3d[(int) (x * k)][(int) (y * k)][1] = array3d[x][y][1];
-          array3d[(int) (x * k)][(int) (y * k)][2] = array3d[x][y][2];
+        int x_ = (int) (Math.cos(x + y) * Math.sqrt(distortionRadiusValueSquare) + x);
+        int y_ = (int) (random.nextGaussian() * Math.sqrt(distortionRadiusValueSquare) / 2 + y);
+        if (!skipPoint && x_ < width && y_ < height && x_ > 0 && y_ > 0) {
+          array3d[x][y][0] = array3d[x_][y_][0];
+          array3d[x][y][1] = array3d[x_][y_][1];
+          array3d[x][y][2] = array3d[x_][y_][2];
         }
       }
     }
@@ -81,7 +83,7 @@ public class WaveAnimation extends Thread {
     String corner = "top-left";
     int[] pixels = this.cornerPixels.get(corner);
 
-    while (!StopAnimationFlag.stopAnimationFlag.get()) {
+    while (!WaveAnimationSequential.stopAnimationFlag.get()) {
       this.isPassFinish = false;
       // Pass loop
       double tan = Math.tan(Math.toRadians(angel));
@@ -100,7 +102,7 @@ public class WaveAnimation extends Thread {
       this.scoreLabel.setAngel(angel);
       this.scoreLabel.increaseScore();
 
-      while (!this.isPassFinish && !StopAnimationFlag.stopAnimationFlag.get()) {
+      while (!this.isPassFinish && !WaveAnimationSequential.stopAnimationFlag.get()) {
         int[][][] img3d = imageHelper.get3dArray();
         this.isPassFinish = true;
 
@@ -139,6 +141,12 @@ public class WaveAnimation extends Thread {
           case "bottom-right":
             c -= 1;
             break;
+        }
+
+        try {
+          Thread.sleep(delayValue);
+        } catch (InterruptedException e) {
+          e.printStackTrace();
         }
       }
       System.out.println("Finish pass!\n");

@@ -1,4 +1,4 @@
-package com.sequential;
+package com.utils;
 
 public class Wave {
 
