@@ -19,6 +19,7 @@ public class ImageHelper {
       this.image = new BufferedImage(600, 400, BufferedImage.TYPE_INT_RGB);
       e.printStackTrace();
     }
+
     this.width = this.image.getWidth();
     this.height = this.image.getHeight();
   }
@@ -75,6 +76,19 @@ public class ImageHelper {
       }
     }
     return image;
+  }
+
+  public static int[][][] copyOfRGBArray(int[][][] data, int width, int height) {
+    int[][][] result = new int[width][height][3];
+
+    for (int i = 0; i < width; i++) {
+      for (int j = 0; j < height; j++) {
+        result[i][j][0] = data[i][j][0];
+        result[i][j][1] = data[i][j][1];
+        result[i][j][2] = data[i][j][2];
+      }
+    }
+    return result;
   }
 
   public void setImage(BufferedImage image) {

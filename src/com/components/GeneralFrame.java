@@ -1,11 +1,12 @@
 package com.components;
 
+import com.parallel.WaveAnimationParallel;
 import com.sequential.WaveAnimationSequential;
 import com.utils.ImageHelper;
+import com.utils.Mode;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.nio.file.Paths;
 import javax.swing.*;
@@ -16,11 +17,23 @@ import javax.swing.event.ChangeListener;
 
 public class GeneralFrame extends JFrame {
   private ImageHelper imageHelper;
+  private JScrollPane canvasPanel;
   private JLabel canvasLabel;
 
   private JButton startBtn;
   private JButton stopBtn;
   private JButton selectFileBtn;
+
+  private JPanel modePanel;
+  private JRadioButton radioButton1;
+  private JRadioButton radioButton2;
+  private Mode mode = Mode.SEQUENTIAL;
+
+  private JPanel slidersPanel;
+  private JLabel delayLabel;
+  private JSlider delaySlider;
+  private JLabel distortionRadiusLabel;
+  private JSlider distortionRadiusSlider;
 
   private int delayValue = 0;
   private int distortionRadiusValue = 10;
@@ -37,21 +50,37 @@ public class GeneralFrame extends JFrame {
   }
 
   private void initComponents() {
-    imageHelper = new ImageHelper(String.valueOf(Paths.get("resources/img1.jpg")));
-    BufferedImage canvas = imageHelper.getImage();
-
-    canvasLabel = new JLabel(new ImageIcon(canvas));
-
-    JPanel canvasPanel = new JPanel();
-    canvasPanel.add(canvasLabel, null);
-
     setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
     setTitle("Flat wave animation ~ Samsung mini-project");
 
-    canvasPanel.setBorder(BorderFactory.createBevelBorder(BevelBorder.RAISED));
+    initCanvasPanel();
 
     scoreLabel = new ScoreLabel();
 
+    initControlButtons();
+
+    initRadioBtnPanel();
+
+    initSliderPanel();
+
+    initSliderLayout();
+    initGeneralLayout();
+
+    pack();
+  }
+
+  private void initCanvasPanel() {
+    imageHelper = new ImageHelper(String.valueOf(Paths.get("resources/img1.jpg")));
+
+    canvasLabel = new JLabel(new ImageIcon(imageHelper.getImage()));
+
+    JPanel cp = new JPanel();
+    cp.add(canvasLabel, null);
+    cp.setBorder(BorderFactory.createBevelBorder(BevelBorder.RAISED));
+    canvasPanel = new JScrollPane(cp);
+  }
+
+  private void initControlButtons() {
     startBtn = new JButton("Start");
     stopBtn = new JButton("Stop");
     selectFileBtn = new JButton("Select image...");
@@ -80,14 +109,51 @@ public class GeneralFrame extends JFrame {
             selectFileBtnActionPerformed(actionEvent);
           }
         });
+  }
 
-    JPanel slidersPanel = new JPanel();
+  private void initRadioBtnPanel() {
+    modePanel = new JPanel();
+    TitledBorder tbf = BorderFactory.createTitledBorder("Mode");
+    tbf.setTitleFont(new Font("Arial", Font.BOLD, 14));
+    modePanel.setBorder(tbf);
+    modePanel.setLayout(new GridLayout(2, 1));
+
+    ButtonGroup buttonGroup = new ButtonGroup();
+    radioButton1 = new JRadioButton();
+    radioButton2 = new JRadioButton();
+
+    buttonGroup.add(radioButton1);
+    radioButton1.setText("Sequential");
+    radioButton1.addActionListener(
+        new ActionListener() {
+          public void actionPerformed(ActionEvent evt) {
+            radioButton1ActionPerformed(evt);
+          }
+        });
+
+    buttonGroup.add(radioButton2);
+    radioButton2.setText("Parallel");
+    radioButton2.addActionListener(
+        new ActionListener() {
+          public void actionPerformed(ActionEvent evt) {
+            radioButton2ActionPerformed(evt);
+          }
+        });
+
+    buttonGroup.setSelected(radioButton1.getModel(), true);
+
+    modePanel.add(radioButton1);
+    modePanel.add(radioButton2);
+  }
+
+  private void initSliderPanel() {
+    slidersPanel = new JPanel();
     TitledBorder tbf = BorderFactory.createTitledBorder("Parameters");
     tbf.setTitleFont(new Font("Arial", Font.BOLD, 14));
     slidersPanel.setBorder(tbf);
 
-    JLabel delayLabel = new JLabel("Animation delay");
-    JSlider delaySlider = new JSlider(0, 1000, delayValue);
+    delayLabel = new JLabel("Animation delay");
+    delaySlider = new JSlider(0, 1000, delayValue);
     delaySlider.setMajorTickSpacing(250);
     delaySlider.setMinorTickSpacing(100);
     delaySlider.setPaintTicks(true);
@@ -98,11 +164,12 @@ public class GeneralFrame extends JFrame {
           public void stateChanged(ChangeEvent e) {
             delayValue = ((JSlider) e.getSource()).getValue();
             WaveAnimationSequential.delayValue = delayValue;
+            WaveAnimationParallel.delayValue = delayValue;
           }
         });
 
-    JLabel distortionRadiusLabel = new JLabel("Radius of distortion");
-    JSlider distortionRadiusSlider = new JSlider(10, 20, distortionRadiusValue);
+    distortionRadiusLabel = new JLabel("Radius of distortion");
+    distortionRadiusSlider = new JSlider(10, 20, distortionRadiusValue);
     distortionRadiusSlider.setMajorTickSpacing(5);
     distortionRadiusSlider.setMinorTickSpacing(1);
     distortionRadiusSlider.setPaintTicks(true);
@@ -114,9 +181,13 @@ public class GeneralFrame extends JFrame {
             distortionRadiusValue = ((JSlider) e.getSource()).getValue();
             WaveAnimationSequential.distortionRadiusValueSquare =
                 distortionRadiusValue * distortionRadiusValue;
+            WaveAnimationParallel.distortionRadiusValueSquare =
+                distortionRadiusValue * distortionRadiusValue;
           }
         });
+  }
 
+  private void initSliderLayout() {
     GroupLayout slidersPanelLayout = new GroupLayout(slidersPanel);
     slidersPanel.setLayout(slidersPanelLayout);
 
@@ -148,7 +219,9 @@ public class GeneralFrame extends JFrame {
                     .createParallelGroup(GroupLayout.Alignment.CENTER)
                     .addComponent(distortionRadiusLabel)
                     .addComponent(distortionRadiusSlider)));
+  }
 
+  private void initGeneralLayout() {
     GroupLayout layout = new GroupLayout(getContentPane());
     getContentPane().setLayout(layout);
 
@@ -175,6 +248,7 @@ public class GeneralFrame extends JFrame {
             .addGroup(
                 layout
                     .createSequentialGroup()
+                    .addComponent(modePanel, 0, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(slidersPanel, 0, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)));
 
     layout.setVerticalGroup(
@@ -198,29 +272,50 @@ public class GeneralFrame extends JFrame {
             .addGroup(
                 layout
                     .createParallelGroup(GroupLayout.Alignment.BASELINE)
+                    .addComponent(modePanel)
                     .addComponent(slidersPanel)));
   }
 
   private void startBtnActionPerformed(ActionEvent evt) {
-    System.out.println("Start sequential animation.");
-
     onStartEnable();
     updateCanvas();
 
-    WaveAnimationSequential.delayValue = delayValue;
-    WaveAnimationSequential.distortionRadiusValueSquare =
-        distortionRadiusValue * distortionRadiusValue;
+    switch (this.mode) {
+      case SEQUENTIAL:
+        {
+          WaveAnimationSequential.delayValue = delayValue;
+          WaveAnimationSequential.distortionRadiusValueSquare =
+              distortionRadiusValue * distortionRadiusValue;
 
-    WaveAnimationSequential wa =
-        new WaveAnimationSequential(this, canvasLabel, imageHelper, scoreLabel);
-    WaveAnimationSequential.stopAnimationFlag.set(false);
-    wa.start();
+          WaveAnimationSequential wa =
+              new WaveAnimationSequential(this, canvasLabel, imageHelper, scoreLabel);
+          WaveAnimationSequential.stopAnimationFlag.set(false);
+          wa.start();
+          break;
+        }
+
+      case PARALLEL:
+        WaveAnimationParallel.delayValue = delayValue;
+        WaveAnimationParallel.distortionRadiusValueSquare =
+            distortionRadiusValue * distortionRadiusValue;
+
+        WaveAnimationParallel wa =
+            new WaveAnimationParallel(this, canvasLabel, imageHelper, scoreLabel);
+        WaveAnimationParallel.stopAnimationFlag.set(false);
+        wa.start();
+        break;
+    }
   }
 
   private void stopBtnActionPerformed(ActionEvent evt) {
-    System.out.println("Stop sequential animation.");
-
-    WaveAnimationSequential.stopAnimationFlag.set(true);
+    switch (this.mode) {
+      case SEQUENTIAL:
+        WaveAnimationSequential.stopAnimationFlag.set(true);
+        break;
+      case PARALLEL:
+        WaveAnimationParallel.stopAnimationFlag.set(true);
+        break;
+    }
     updateCanvas();
 
     onStopEnable();
@@ -235,15 +330,27 @@ public class GeneralFrame extends JFrame {
     canvasLabel.setIcon(new ImageIcon(imageHelper.getImage()));
   }
 
+  private void radioButton1ActionPerformed(ActionEvent evt) {
+    this.mode = Mode.SEQUENTIAL;
+  }
+
+  private void radioButton2ActionPerformed(ActionEvent evt) {
+    this.mode = Mode.PARALLEL;
+  }
+
   private void onStartEnable() {
     this.startBtn.setEnabled(false);
     this.stopBtn.setEnabled(true);
     this.selectFileBtn.setEnabled(false);
+    this.radioButton1.setEnabled(false);
+    this.radioButton2.setEnabled(false);
   }
 
   private void onStopEnable() {
     this.startBtn.setEnabled(true);
     this.stopBtn.setEnabled(false);
     this.selectFileBtn.setEnabled(true);
+    this.radioButton1.setEnabled(true);
+    this.radioButton2.setEnabled(true);
   }
 }

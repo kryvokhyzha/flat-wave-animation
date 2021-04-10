@@ -1,24 +1,30 @@
 package com.components;
 
+import com.utils.CornerPosition;
 import javax.swing.*;
 
 public class ScoreLabel extends JLabel {
   private int score = 0;
   private double angel = 45;
-  private String corner = "top-left";
+  private String corner = CornerPosition.TOPLEFT.getPosition();
 
   public ScoreLabel() {
-    this.setText("Pass: " + this.score + "; Corner: " + this.corner + "; Angel: " + this.angel);
+    updateLabelText();
   }
 
   public void setScore(int score) {
     this.score = score;
-    this.setText("Pass: " + this.score + "; Corner: " + this.corner + "; Angel: " + this.angel);
+    updateLabelText();
   }
 
   public void increaseScore() {
     this.score += 1;
-    this.setText("Pass: " + this.score + "; Corner: " + this.corner + "; Angel: " + this.angel);
+    updateLabelText();
+  }
+
+  private void updateLabelText() {
+    this.setText(
+        String.format("Pass: %d; Corner: %s; Angel: %.2f", this.score, this.corner, this.angel));
   }
 
   public void setAngel(double angel) {

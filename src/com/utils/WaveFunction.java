@@ -4,16 +4,17 @@ public class WaveFunction {
 
   public WaveFunction() {}
 
-  public static int getLinearValue(double x, int c, double angel, String corner) {
+  public static int getLinearValue(double x, int c, double angel, CornerPosition corner) {
     double tan = Math.tan(Math.toRadians(angel));
     int result = 0;
+
     switch (corner) {
-      case "top-left":
-      case "bottom-right":
+      case TOPLEFT:
+      case BOTTOMRIGHT:
         result = (int) (-x * tan + c);
         break;
-      case "top-right":
-      case "bottom-left":
+      case TOPRIGHT:
+      case BOTTOMLEFT:
         result = (int) (x * tan + c);
         break;
     }

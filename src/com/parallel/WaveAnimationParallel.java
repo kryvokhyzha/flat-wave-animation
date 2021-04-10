@@ -1,4 +1,4 @@
-package com.sequential;
+package com.parallel;
 
 import com.components.GeneralFrame;
 import com.components.ScoreLabel;
@@ -11,7 +11,7 @@ import java.util.HashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.*;
 
-public class WaveAnimationSequential extends Thread {
+public class WaveAnimationParallel extends Thread {
   private final GeneralFrame frame;
   private final JLabel jLabel;
   private final ImageHelper imageHelper;
@@ -23,7 +23,7 @@ public class WaveAnimationSequential extends Thread {
   public static final AtomicBoolean stopAnimationFlag = new AtomicBoolean(true);
   private boolean isPassFinish = false;
 
-  public WaveAnimationSequential(
+  public WaveAnimationParallel(
       GeneralFrame frame, JLabel jLabel, ImageHelper imageHelper, ScoreLabel scoreLabel) {
     this.frame = frame;
     this.jLabel = jLabel;
@@ -75,7 +75,7 @@ public class WaveAnimationSequential extends Thread {
     CornerPosition corner = CornerPosition.TOPLEFT;
     int[] pixels = this.cornerPixels.get(corner);
 
-    while (!WaveAnimationSequential.stopAnimationFlag.get()) {
+    while (!WaveAnimationParallel.stopAnimationFlag.get()) {
       this.isPassFinish = false;
       // Pass loop
       double tan = Math.tan(Math.toRadians(angel));
@@ -96,7 +96,7 @@ public class WaveAnimationSequential extends Thread {
       this.scoreLabel.increaseScore();
 
       int[][][] originalImage3d = this.imageHelper.get3dArray();
-      while (!this.isPassFinish && !WaveAnimationSequential.stopAnimationFlag.get()) {
+      while (!this.isPassFinish && !WaveAnimationParallel.stopAnimationFlag.get()) {
         int[][][] img3d =
             ImageHelper.copyOfRGBArray(
                 originalImage3d, this.imageHelper.getWidth(), this.imageHelper.getHeight());
@@ -106,7 +106,7 @@ public class WaveAnimationSequential extends Thread {
         ArrayList<int[]> points = buildWaveFunctionKeyPoints(c, angel, corner);
 
         BufferedImage distorImg =
-            DistortionSequential.distorImage(
+            DistortionParallel.distorImage(
                 img3d, this.imageHelper.getWidth(), this.imageHelper.getHeight(), points);
 
         this.jLabel.setIcon(new ImageIcon(distorImg));
