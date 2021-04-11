@@ -5,7 +5,7 @@ import javax.swing.*;
 
 public class ScoreLabel extends JLabel {
   private int score = 0;
-  private double angel = 45;
+  private double angle = 45;
   private String corner = CornerPosition.TOPLEFT.getPosition();
 
   public ScoreLabel() {
@@ -24,11 +24,11 @@ public class ScoreLabel extends JLabel {
 
   private void updateLabelText() {
     this.setText(
-        String.format("Pass: %d; Corner: %s; Angel: %.2f", this.score, this.corner, this.angel));
+        String.format("Pass: %d; Corner: %s; Angle: %.2f", this.score, this.corner, this.angle));
   }
 
-  public void setAngel(double angel) {
-    this.angel = angel;
+  public void setAngle(double angle) {
+    this.angle = angle;
   }
 
   public void setCorner(String corner) {

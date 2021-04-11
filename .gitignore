@@ -24,6 +24,8 @@ hs_err_pid*
 
 # idea files
 .idea
+META-INF
+*.MF
 
 # VScode
 .vscode

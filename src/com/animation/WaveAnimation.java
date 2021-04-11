@@ -84,7 +84,7 @@ public class WaveAnimation extends Thread {
 
   public void startAnimation() {
     int c = 0;
-    double angel = 45;
+    double angle = 45;
     CornerPosition corner = CornerPosition.TOPLEFT;
 
     int[] currentCornerPixels = this.cornerPixels.get(corner);
@@ -94,8 +94,8 @@ public class WaveAnimation extends Thread {
     while (!WaveAnimation.stopAnimationFlag.get()) {
       this.isPassFinish = false;
       // Pass loop
-      double angelRadians = Math.toRadians(angel);
-      double tan = Math.tan(angelRadians);
+      double angleRadians = Math.toRadians(angle);
+      double tan = Math.tan(angleRadians);
 
       int speed = (int) Math.abs(Math.round(tan));
 
@@ -111,7 +111,7 @@ public class WaveAnimation extends Thread {
       }
 
       this.scoreLabel.setCorner(corner.getPosition());
-      this.scoreLabel.setAngel(angel);
+      this.scoreLabel.setAngle(angle);
       this.scoreLabel.increaseScore();
 
       while (!this.isPassFinish && !WaveAnimation.stopAnimationFlag.get()) {
@@ -120,7 +120,7 @@ public class WaveAnimation extends Thread {
                 originalImageArray, this.imageHelper.getWidth(), this.imageHelper.getHeight());
 
         isPassFinish = true;
-        double step = Math.max(0.1, Math.abs(distortionRadiusValue * Math.cos(angelRadians)));
+        double step = Math.max(0.1, Math.abs(distortionRadiusValue * Math.cos(angleRadians)));
 
         ArrayList<int[]> keyPoints = buildWaveFunctionKeyPoints(c, tan, step, corner);
 
@@ -169,7 +169,7 @@ public class WaveAnimation extends Thread {
         }
       }
 
-      angel = Math.random() * 360;
+      angle = Math.random() * 360;
       HashMap<CornerPosition, int[]> randomCorner = getRandomCornerPixel();
 
       corner = randomCorner.keySet().toArray(new CornerPosition[0])[0];
@@ -181,7 +181,7 @@ public class WaveAnimation extends Thread {
 
   public void stopAnimation() {
     this.scoreLabel.setCorner(CornerPosition.TOPLEFT.getPosition());
-    this.scoreLabel.setAngel(45);
+    this.scoreLabel.setAngle(45);
     this.scoreLabel.setScore(0);
     this.jLabel.setIcon(new ImageIcon(this.imageHelper.getImage()));
     this.frame.updateCanvas();
