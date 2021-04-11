@@ -1,7 +1,6 @@
 package com.components;
 
-import com.parallel.WaveAnimationParallel;
-import com.sequential.WaveAnimationSequential;
+import com.animation.WaveAnimation;
 import com.utils.ImageHelper;
 import com.utils.Mode;
 import java.awt.*;
@@ -30,11 +29,14 @@ public class GeneralFrame extends JFrame {
   private Mode mode = Mode.SEQUENTIAL;
 
   private JPanel slidersPanel;
+  private JLabel speedLabel;
+  private JSlider speedSlider;
   private JLabel delayLabel;
   private JSlider delaySlider;
   private JLabel distortionRadiusLabel;
   private JSlider distortionRadiusSlider;
 
+  private int speedValue = 6;
   private int delayValue = 0;
   private int distortionRadiusValue = 10;
 
@@ -59,7 +61,8 @@ public class GeneralFrame extends JFrame {
 
     initControlButtons();
 
-    initRadioBtnPanel();
+    initModePanel();
+    initModeLayout();
 
     initSliderPanel();
 
@@ -111,12 +114,11 @@ public class GeneralFrame extends JFrame {
         });
   }
 
-  private void initRadioBtnPanel() {
+  private void initModePanel() {
     modePanel = new JPanel();
     TitledBorder tbf = BorderFactory.createTitledBorder("Mode");
     tbf.setTitleFont(new Font("Arial", Font.BOLD, 14));
     modePanel.setBorder(tbf);
-    modePanel.setLayout(new GridLayout(2, 1));
 
     ButtonGroup buttonGroup = new ButtonGroup();
     radioButton1 = new JRadioButton();
@@ -141,9 +143,6 @@ public class GeneralFrame extends JFrame {
         });
 
     buttonGroup.setSelected(radioButton1.getModel(), true);
-
-    modePanel.add(radioButton1);
-    modePanel.add(radioButton2);
   }
 
   private void initSliderPanel() {
@@ -152,19 +151,33 @@ public class GeneralFrame extends JFrame {
     tbf.setTitleFont(new Font("Arial", Font.BOLD, 14));
     slidersPanel.setBorder(tbf);
 
+    speedLabel = new JLabel("Speed of propagation");
+    speedSlider = new JSlider(1, 50, speedValue);
+    speedSlider.setMajorTickSpacing(10);
+    speedSlider.setMinorTickSpacing(5);
+    speedSlider.setPaintTicks(true);
+    // speedSlider.setPaintLabels(true);
+
+    speedSlider.addChangeListener(
+        new ChangeListener() {
+          public void stateChanged(ChangeEvent e) {
+            speedValue = ((JSlider) e.getSource()).getValue();
+            WaveAnimation.speedValue = speedValue;
+          }
+        });
+
     delayLabel = new JLabel("Animation delay");
-    delaySlider = new JSlider(0, 1000, delayValue);
-    delaySlider.setMajorTickSpacing(250);
-    delaySlider.setMinorTickSpacing(100);
+    delaySlider = new JSlider(0, 250, delayValue);
+    delaySlider.setMajorTickSpacing(50);
+    delaySlider.setMinorTickSpacing(25);
     delaySlider.setPaintTicks(true);
-    delaySlider.setPaintLabels(true);
+    // delaySlider.setPaintLabels(true);
 
     delaySlider.addChangeListener(
         new ChangeListener() {
           public void stateChanged(ChangeEvent e) {
             delayValue = ((JSlider) e.getSource()).getValue();
-            WaveAnimationSequential.delayValue = delayValue;
-            WaveAnimationParallel.delayValue = delayValue;
+            WaveAnimation.delayValue = delayValue;
           }
         });
 
@@ -173,52 +186,82 @@ public class GeneralFrame extends JFrame {
     distortionRadiusSlider.setMajorTickSpacing(5);
     distortionRadiusSlider.setMinorTickSpacing(1);
     distortionRadiusSlider.setPaintTicks(true);
-    distortionRadiusSlider.setPaintLabels(true);
+    // distortionRadiusSlider.setPaintLabels(true);
 
     distortionRadiusSlider.addChangeListener(
         new ChangeListener() {
           public void stateChanged(ChangeEvent e) {
             distortionRadiusValue = ((JSlider) e.getSource()).getValue();
-            WaveAnimationSequential.distortionRadiusValueSquare =
-                distortionRadiusValue * distortionRadiusValue;
-            WaveAnimationParallel.distortionRadiusValueSquare =
+            WaveAnimation.distortionRadiusValueSquare = distortionRadiusValue;
+            WaveAnimation.distortionRadiusValueSquare =
                 distortionRadiusValue * distortionRadiusValue;
           }
         });
+  }
+
+  private void initModeLayout() {
+    GroupLayout modePanelLayout = new GroupLayout(modePanel);
+    modePanel.setLayout(modePanelLayout);
+
+    GroupLayout.SequentialGroup hGroup = modePanelLayout.createSequentialGroup();
+
+    hGroup.addGroup(
+        modePanelLayout
+            .createParallelGroup()
+            .addComponent(radioButton1)
+            .addComponent(radioButton2));
+
+    modePanelLayout.setHorizontalGroup(hGroup);
+
+    GroupLayout.SequentialGroup vGroup = modePanelLayout.createSequentialGroup();
+    vGroup.addGroup(
+        modePanelLayout
+            .createSequentialGroup()
+            .addComponent(radioButton1)
+            .addComponent(radioButton2));
+    modePanelLayout.setVerticalGroup(vGroup);
   }
 
   private void initSliderLayout() {
     GroupLayout slidersPanelLayout = new GroupLayout(slidersPanel);
     slidersPanel.setLayout(slidersPanelLayout);
 
-    slidersPanelLayout.setHorizontalGroup(
-        slidersPanelLayout
-            .createParallelGroup(GroupLayout.Alignment.LEADING)
-            .addGroup(
-                slidersPanelLayout
-                    .createSequentialGroup()
-                    .addComponent(delayLabel, 0, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(delaySlider))
-            .addGroup(
-                slidersPanelLayout
-                    .createSequentialGroup()
-                    .addComponent(
-                        distortionRadiusLabel, 0, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(distortionRadiusSlider)));
+    GroupLayout.SequentialGroup hGroup = slidersPanelLayout.createSequentialGroup();
 
-    slidersPanelLayout.setVerticalGroup(
-        slidersPanelLayout
-            .createSequentialGroup()
-            .addGroup(
-                slidersPanelLayout
-                    .createParallelGroup(GroupLayout.Alignment.CENTER)
-                    .addComponent(delayLabel)
-                    .addComponent(delaySlider))
-            .addGroup(
-                slidersPanelLayout
-                    .createParallelGroup(GroupLayout.Alignment.CENTER)
-                    .addComponent(distortionRadiusLabel)
-                    .addComponent(distortionRadiusSlider)));
+    hGroup
+        .addGroup(
+            slidersPanelLayout
+                .createParallelGroup()
+                .addComponent(speedLabel)
+                .addComponent(delayLabel)
+                .addComponent(distortionRadiusLabel))
+        .addGroup(
+            slidersPanelLayout
+                .createParallelGroup()
+                .addComponent(speedSlider)
+                .addComponent(delaySlider)
+                .addComponent(distortionRadiusSlider));
+
+    slidersPanelLayout.setHorizontalGroup(hGroup);
+
+    GroupLayout.SequentialGroup vGroup = slidersPanelLayout.createSequentialGroup();
+    vGroup
+        .addGroup(
+            slidersPanelLayout
+                .createParallelGroup(GroupLayout.Alignment.CENTER)
+                .addComponent(speedLabel)
+                .addComponent(speedSlider))
+        .addGroup(
+            slidersPanelLayout
+                .createParallelGroup(GroupLayout.Alignment.CENTER)
+                .addComponent(delayLabel)
+                .addComponent(delaySlider))
+        .addGroup(
+            slidersPanelLayout
+                .createParallelGroup(GroupLayout.Alignment.CENTER)
+                .addComponent(distortionRadiusLabel)
+                .addComponent(distortionRadiusSlider));
+    slidersPanelLayout.setVerticalGroup(vGroup);
   }
 
   private void initGeneralLayout() {
@@ -280,42 +323,18 @@ public class GeneralFrame extends JFrame {
     onStartEnable();
     updateCanvas();
 
-    switch (this.mode) {
-      case SEQUENTIAL:
-        {
-          WaveAnimationSequential.delayValue = delayValue;
-          WaveAnimationSequential.distortionRadiusValueSquare =
-              distortionRadiusValue * distortionRadiusValue;
+    WaveAnimation.speedValue = speedValue;
+    WaveAnimation.delayValue = delayValue;
+    WaveAnimation.distortionRadiusValue = distortionRadiusValue;
+    WaveAnimation.distortionRadiusValueSquare = distortionRadiusValue * distortionRadiusValue;
 
-          WaveAnimationSequential wa =
-              new WaveAnimationSequential(this, canvasLabel, imageHelper, scoreLabel);
-          WaveAnimationSequential.stopAnimationFlag.set(false);
-          wa.start();
-          break;
-        }
-
-      case PARALLEL:
-        WaveAnimationParallel.delayValue = delayValue;
-        WaveAnimationParallel.distortionRadiusValueSquare =
-            distortionRadiusValue * distortionRadiusValue;
-
-        WaveAnimationParallel wa =
-            new WaveAnimationParallel(this, canvasLabel, imageHelper, scoreLabel);
-        WaveAnimationParallel.stopAnimationFlag.set(false);
-        wa.start();
-        break;
-    }
+    WaveAnimation wa = new WaveAnimation(this, canvasLabel, imageHelper, scoreLabel, this.mode);
+    WaveAnimation.stopAnimationFlag.set(false);
+    wa.start();
   }
 
   private void stopBtnActionPerformed(ActionEvent evt) {
-    switch (this.mode) {
-      case SEQUENTIAL:
-        WaveAnimationSequential.stopAnimationFlag.set(true);
-        break;
-      case PARALLEL:
-        WaveAnimationParallel.stopAnimationFlag.set(true);
-        break;
-    }
+    WaveAnimation.stopAnimationFlag.set(true);
     updateCanvas();
 
     onStopEnable();

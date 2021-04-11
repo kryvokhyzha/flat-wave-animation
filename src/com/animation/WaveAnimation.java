@@ -1,9 +1,12 @@
-package com.sequential;
+package com.animation;
 
+import com.animation.parallel.DistortionParallel;
+import com.animation.sequential.DistortionSequential;
 import com.components.GeneralFrame;
 import com.components.ScoreLabel;
 import com.utils.CornerPosition;
 import com.utils.ImageHelper;
+import com.utils.Mode;
 import com.utils.WaveFunction;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
@@ -11,20 +14,26 @@ import java.util.HashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.*;
 
-public class WaveAnimationSequential extends Thread {
+public class WaveAnimation extends Thread {
   private final GeneralFrame frame;
   private final JLabel jLabel;
   private final ImageHelper imageHelper;
   private final ScoreLabel scoreLabel;
   private final HashMap<CornerPosition, int[]> cornerPixels;
 
-  public static int delayValue, distortionRadiusValueSquare;
+  private final Mode mode;
+
+  public static int speedValue, delayValue, distortionRadiusValue, distortionRadiusValueSquare;
 
   public static final AtomicBoolean stopAnimationFlag = new AtomicBoolean(true);
   private boolean isPassFinish = false;
 
-  public WaveAnimationSequential(
-      GeneralFrame frame, JLabel jLabel, ImageHelper imageHelper, ScoreLabel scoreLabel) {
+  public WaveAnimation(
+      GeneralFrame frame,
+      JLabel jLabel,
+      ImageHelper imageHelper,
+      ScoreLabel scoreLabel,
+      Mode mode) {
     this.frame = frame;
     this.jLabel = jLabel;
     this.imageHelper = imageHelper;
@@ -38,6 +47,8 @@ public class WaveAnimationSequential extends Thread {
     this.cornerPixels.put(
         CornerPosition.BOTTOMRIGHT,
         new int[] {imageHelper.getWidth() - 1, imageHelper.getHeight() - 1});
+
+    this.mode = mode;
   }
 
   private HashMap<CornerPosition, int[]> getRandomCornerPixel() {
@@ -51,10 +62,12 @@ public class WaveAnimationSequential extends Thread {
     return result;
   }
 
-  private ArrayList<int[]> buildWaveFunctionKeyPoints(int c, double angel, CornerPosition corner) {
+  private ArrayList<int[]> buildWaveFunctionKeyPoints(
+      int c, double tan, double step, CornerPosition corner) {
     ArrayList<int[]> points = new ArrayList<>();
-    for (double x = 0; x < this.imageHelper.getWidth(); x += 7) {
-      int yCurrent = WaveFunction.getLinearValue(x, c, angel, corner);
+
+    for (double x = 0; x < this.imageHelper.getWidth(); x += step) {
+      int yCurrent = WaveFunction.getLinearValue(x, c, tan, corner);
       int xCurrent = (int) Math.round(x);
       if (yCurrent < 0
           || yCurrent >= this.imageHelper.getHeight()
@@ -73,21 +86,27 @@ public class WaveAnimationSequential extends Thread {
     int c = 0;
     double angel = 45;
     CornerPosition corner = CornerPosition.TOPLEFT;
-    int[] pixels = this.cornerPixels.get(corner);
 
-    while (!WaveAnimationSequential.stopAnimationFlag.get()) {
+    int[] currentCornerPixels = this.cornerPixels.get(corner);
+
+    int[][][] originalImageArray = this.imageHelper.get3dArray();
+
+    while (!WaveAnimation.stopAnimationFlag.get()) {
       this.isPassFinish = false;
       // Pass loop
-      double tan = Math.tan(Math.toRadians(angel));
+      double angelRadians = Math.toRadians(angel);
+      double tan = Math.tan(angelRadians);
+
+      int speed = (int) Math.abs(Math.round(tan));
 
       switch (corner) {
         case TOPLEFT:
         case BOTTOMRIGHT:
-          c = (int) (pixels[1] + pixels[0] * tan);
+          c = (int) (currentCornerPixels[1] + currentCornerPixels[0] * tan);
           break;
         case TOPRIGHT:
         case BOTTOMLEFT:
-          c = (int) (pixels[1] - pixels[0] * tan);
+          c = (int) (currentCornerPixels[1] - currentCornerPixels[0] * tan);
           break;
       }
 
@@ -95,19 +114,39 @@ public class WaveAnimationSequential extends Thread {
       this.scoreLabel.setAngel(angel);
       this.scoreLabel.increaseScore();
 
-      int[][][] originalImage3d = this.imageHelper.get3dArray();
-      while (!this.isPassFinish && !WaveAnimationSequential.stopAnimationFlag.get()) {
-        int[][][] img3d =
+      while (!this.isPassFinish && !WaveAnimation.stopAnimationFlag.get()) {
+        int[][][] distorImageArray =
             ImageHelper.copyOfRGBArray(
-                originalImage3d, this.imageHelper.getWidth(), this.imageHelper.getHeight());
+                originalImageArray, this.imageHelper.getWidth(), this.imageHelper.getHeight());
 
         isPassFinish = true;
+        double step = Math.max(0.1, Math.abs(distortionRadiusValue * Math.cos(angelRadians)));
 
-        ArrayList<int[]> points = buildWaveFunctionKeyPoints(c, angel, corner);
+        ArrayList<int[]> keyPoints = buildWaveFunctionKeyPoints(c, tan, step, corner);
 
-        BufferedImage distorImg =
-            DistortionSequential.distorImage(
-                img3d, this.imageHelper.getWidth(), this.imageHelper.getHeight(), points);
+        if (keyPoints.size() == 0) {
+          continue;
+        }
+
+        BufferedImage distorImg = null;
+        switch (this.mode) {
+          case SEQUENTIAL:
+            distorImg =
+                DistortionSequential.distorImage(
+                    distorImageArray,
+                    this.imageHelper.getWidth(),
+                    this.imageHelper.getHeight(),
+                    keyPoints);
+            break;
+          case PARALLEL:
+            distorImg =
+                DistortionParallel.distorImage(
+                    distorImageArray,
+                    this.imageHelper.getWidth(),
+                    this.imageHelper.getHeight(),
+                    keyPoints);
+            break;
+        }
 
         this.jLabel.setIcon(new ImageIcon(distorImg));
         this.frame.updateCanvas();
@@ -115,11 +154,11 @@ public class WaveAnimationSequential extends Thread {
         switch (corner) {
           case TOPLEFT:
           case TOPRIGHT:
-            c += 1;
+            c += (speedValue + speed);
             break;
           case BOTTOMLEFT:
           case BOTTOMRIGHT:
-            c -= 1;
+            c -= (speedValue + speed);
             break;
         }
 
@@ -134,7 +173,7 @@ public class WaveAnimationSequential extends Thread {
       HashMap<CornerPosition, int[]> randomCorner = getRandomCornerPixel();
 
       corner = randomCorner.keySet().toArray(new CornerPosition[0])[0];
-      pixels = randomCorner.get(corner);
+      currentCornerPixels = randomCorner.get(corner);
     }
 
     stopAnimation();
