@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
 import javax.imageio.ImageIO;
+import javax.swing.*;
 
 public class ImageHelper {
   private BufferedImage image;
@@ -18,6 +19,15 @@ public class ImageHelper {
     } catch (IOException e) {
       this.image = new BufferedImage(600, 400, BufferedImage.TYPE_INT_RGB);
       e.printStackTrace();
+    }
+
+    if (this.image == null) {
+      this.image = new BufferedImage(600, 400, BufferedImage.TYPE_INT_RGB);
+      JOptionPane.showMessageDialog(
+          new JFrame(),
+          "Please, choose file with .JPEG or .BMP extension",
+          "Format error",
+          JOptionPane.ERROR_MESSAGE);
     }
 
     this.width = this.image.getWidth();
