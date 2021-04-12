@@ -71,7 +71,7 @@ Two variants have to be implemented:
 + Since the angle takes the range **from 0 to 360 degree** randomly, so in some cases wave propagation may go away from the image. If it happens, the image will have no key points, and we will go to the next iteration.
 
 ### Algorithm comparison
-To compare parallel version of algorithm with sequential one, I have used "speedup" metric:
+To compare parallel version of algorithm with sequential one, I have used "speedup" metric:<br>
 <img src="https://latex.codecogs.com/svg.image?speedup&space;=&space;\frac{time_{sequential}}{time_{parallel}}" title="speedup = \frac{time_{sequential}}{time_{parallel}}" /><br>
 With default parameters parallel algorithm shows speedup in **1.33**. 
 
