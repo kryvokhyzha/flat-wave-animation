@@ -16,11 +16,12 @@ public class DistortionParallel {
     int maxX = points.stream().mapToInt(a -> a[0]).max().orElseThrow(NoSuchElementException::new);
     int maxY = points.stream().mapToInt(a -> a[1]).max().orElseThrow(NoSuchElementException::new);
 
-    minX = Math.max(0, minX - WaveAnimation.distortionRadiusValue);
-    minY = Math.max(0, minY - WaveAnimation.distortionRadiusValue);
+    int distortionRadiusValueLocal = WaveAnimation.distortionRadiusValue.get();
+    minX = Math.max(0, minX - distortionRadiusValueLocal);
+    minY = Math.max(0, minY - distortionRadiusValueLocal);
 
-    maxX = Math.min(width, maxX + WaveAnimation.distortionRadiusValue + 1);
-    maxY = Math.min(height, maxY + WaveAnimation.distortionRadiusValue + 1);
+    maxX = Math.min(width, maxX + distortionRadiusValueLocal + 1);
+    maxY = Math.min(height, maxY + distortionRadiusValueLocal + 1);
 
     for (int x = minX; x < maxX; x++) {
       DistortionStageForkJoin task =

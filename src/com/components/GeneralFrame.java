@@ -162,7 +162,7 @@ public class GeneralFrame extends JFrame {
         new ChangeListener() {
           public void stateChanged(ChangeEvent e) {
             speedValue = ((JSlider) e.getSource()).getValue();
-            WaveAnimation.speedValue = speedValue;
+            WaveAnimation.speedValue.set(speedValue);
           }
         });
 
@@ -177,7 +177,7 @@ public class GeneralFrame extends JFrame {
         new ChangeListener() {
           public void stateChanged(ChangeEvent e) {
             delayValue = ((JSlider) e.getSource()).getValue();
-            WaveAnimation.delayValue = delayValue;
+            WaveAnimation.delayValue.set(delayValue);
           }
         });
 
@@ -192,9 +192,9 @@ public class GeneralFrame extends JFrame {
         new ChangeListener() {
           public void stateChanged(ChangeEvent e) {
             distortionRadiusValue = ((JSlider) e.getSource()).getValue();
-            WaveAnimation.distortionRadiusValueSquare = distortionRadiusValue;
-            WaveAnimation.distortionRadiusValueSquare =
-                distortionRadiusValue * distortionRadiusValue;
+            WaveAnimation.distortionRadiusValue.set(distortionRadiusValue);
+            WaveAnimation.distortionRadiusValueSquare.set(
+                distortionRadiusValue * distortionRadiusValue);
           }
         });
   }
@@ -323,10 +323,10 @@ public class GeneralFrame extends JFrame {
     onStartEnable();
     updateCanvas();
 
-    WaveAnimation.speedValue = speedValue;
-    WaveAnimation.delayValue = delayValue;
-    WaveAnimation.distortionRadiusValue = distortionRadiusValue;
-    WaveAnimation.distortionRadiusValueSquare = distortionRadiusValue * distortionRadiusValue;
+    WaveAnimation.speedValue.set(speedValue);
+    WaveAnimation.delayValue.set(delayValue);
+    WaveAnimation.distortionRadiusValue.set(distortionRadiusValue);
+    WaveAnimation.distortionRadiusValueSquare.set(distortionRadiusValue * distortionRadiusValue);
 
     WaveAnimation wa = new WaveAnimation(this, canvasLabel, imageHelper, scoreLabel, this.mode);
     WaveAnimation.stopAnimationFlag.set(false);

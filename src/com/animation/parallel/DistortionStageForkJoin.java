@@ -26,12 +26,15 @@ public class DistortionStageForkJoin extends RecursiveTask<ArrayList<int[]>> {
   @Override
   protected ArrayList<int[]> compute() {
     ArrayList<int[]> result = new ArrayList<>();
+    int distortionRadiusValueSquareLocal = WaveAnimation.distortionRadiusValueSquare.get();
+    int distortionRadiusValueLocal = WaveAnimation.distortionRadiusValue.get();
+
     for (int y = minY; y < maxY; y++) {
       boolean skipPoint = true;
 
       for (int[] point : points) {
         if (Math.pow(y - point[1], 2) + Math.pow(x - point[0], 2)
-            < WaveAnimation.distortionRadiusValueSquare) {
+            < distortionRadiusValueSquareLocal) {
           skipPoint = false;
           break;
         }
@@ -42,11 +45,8 @@ public class DistortionStageForkJoin extends RecursiveTask<ArrayList<int[]>> {
       }
 
       // add mean offset parameter
-      int x_ = (int) (Math.cos(x + y) * Math.sqrt(WaveAnimation.distortionRadiusValueSquare) + x);
-      int y_ =
-          (int)
-              (random.nextGaussian() * Math.sqrt(WaveAnimation.distortionRadiusValueSquare) / 2
-                  + y);
+      int x_ = (int) (Math.cos(x + y) * distortionRadiusValueLocal + x);
+      int y_ = (int) (random.nextGaussian() * distortionRadiusValueLocal / 2 + y);
 
       if (x_ < width && y_ < height && x_ > 0 && y_ > 0) {
         result.add(new int[] {x, y, x_, y_});

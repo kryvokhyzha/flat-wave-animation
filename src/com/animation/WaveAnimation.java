@@ -12,6 +12,7 @@ import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import javax.swing.*;
 
 public class WaveAnimation extends Thread {
@@ -23,7 +24,10 @@ public class WaveAnimation extends Thread {
 
   private final Mode mode;
 
-  public static int speedValue, delayValue, distortionRadiusValue, distortionRadiusValueSquare;
+  public static final AtomicInteger speedValue = new AtomicInteger();
+  public static final AtomicInteger delayValue = new AtomicInteger();
+  public static final AtomicInteger distortionRadiusValue = new AtomicInteger();
+  public static final AtomicInteger distortionRadiusValueSquare = new AtomicInteger();
 
   public static final AtomicBoolean stopAnimationFlag = new AtomicBoolean(true);
   private boolean isPassFinish = false;
@@ -67,7 +71,7 @@ public class WaveAnimation extends Thread {
     ArrayList<int[]> points = new ArrayList<>();
 
     for (double x = 0; x < this.imageHelper.getWidth(); x += step) {
-      int yCurrent = WaveFunction.getLinearValue(x, c, tan, corner);
+      int yCurrent = WaveFunction.getLinearValue(x, c, tan);
       int xCurrent = (int) Math.round(x);
       if (yCurrent < 0
           || yCurrent >= this.imageHelper.getHeight()
@@ -83,8 +87,8 @@ public class WaveAnimation extends Thread {
   }
 
   public void startAnimation() {
-    int c = 0;
-    double angle = 45;
+    int c;
+    double angle = 20;
     CornerPosition corner = CornerPosition.TOPLEFT;
 
     int[] currentCornerPixels = this.cornerPixels.get(corner);
@@ -94,21 +98,13 @@ public class WaveAnimation extends Thread {
     while (!WaveAnimation.stopAnimationFlag.get()) {
       this.isPassFinish = false;
       // Pass loop
-      double angleRadians = Math.toRadians(angle);
+      System.out.println(angle);
+      double angleRadians = Math.toRadians(90 - angle);
       double tan = Math.tan(angleRadians);
 
       int speed = (int) Math.abs(Math.round(tan));
 
-      switch (corner) {
-        case TOPLEFT:
-        case BOTTOMRIGHT:
-          c = (int) (currentCornerPixels[1] + currentCornerPixels[0] * tan);
-          break;
-        case TOPRIGHT:
-        case BOTTOMLEFT:
-          c = (int) (currentCornerPixels[1] - currentCornerPixels[0] * tan);
-          break;
-      }
+      c = (int) (currentCornerPixels[1] + currentCornerPixels[0] * tan);
 
       this.scoreLabel.setCorner(corner.getPosition());
       this.scoreLabel.setAngle(angle);
@@ -120,7 +116,8 @@ public class WaveAnimation extends Thread {
                 originalImageArray, this.imageHelper.getWidth(), this.imageHelper.getHeight());
 
         isPassFinish = true;
-        double step = Math.max(0.1, Math.abs(distortionRadiusValue * Math.cos(angleRadians)));
+        double step = Math.max(0.1, Math.abs(distortionRadiusValue.get() * Math.cos(angleRadians)));
+        step = Math.min(step, distortionRadiusValue.get());
 
         ArrayList<int[]> keyPoints = buildWaveFunctionKeyPoints(c, tan, step, corner);
 
@@ -151,19 +148,14 @@ public class WaveAnimation extends Thread {
         this.jLabel.setIcon(new ImageIcon(distorImg));
         this.frame.updateCanvas();
 
-        switch (corner) {
-          case TOPLEFT:
-          case TOPRIGHT:
-            c += (speedValue + speed);
-            break;
-          case BOTTOMLEFT:
-          case BOTTOMRIGHT:
-            c -= (speedValue + speed);
-            break;
-        }
+        double sign = Math.signum(Math.sin(Math.toRadians(angle)));
+        int speedValueLocal = speedValue.get();
+        c +=
+            (sign) * (speedValueLocal + speed)
+                + Math.abs(Math.abs(sign) - 1) * (speedValueLocal + speed);
 
         try {
-          Thread.sleep(delayValue);
+          Thread.sleep(delayValue.get());
         } catch (InterruptedException e) {
           e.printStackTrace();
         }
