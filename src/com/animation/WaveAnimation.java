@@ -88,7 +88,7 @@ public class WaveAnimation extends Thread {
 
   public void startAnimation() {
     int c;
-    double angle = 20;
+    double angle = 45;
     CornerPosition corner = CornerPosition.TOPLEFT;
 
     int[] currentCornerPixels = this.cornerPixels.get(corner);
@@ -98,13 +98,15 @@ public class WaveAnimation extends Thread {
     while (!WaveAnimation.stopAnimationFlag.get()) {
       this.isPassFinish = false;
       // Pass loop
-      System.out.println(angle);
       double angleRadians = Math.toRadians(90 - angle);
       double tan = Math.tan(angleRadians);
 
       int speed = (int) Math.abs(Math.round(tan));
 
       c = (int) (currentCornerPixels[1] + currentCornerPixels[0] * tan);
+
+      double step = Math.max(0.1, Math.abs(distortionRadiusValue.get() * Math.cos(angleRadians)));
+      step = Math.min(step, distortionRadiusValue.get());
 
       this.scoreLabel.setCorner(corner.getPosition());
       this.scoreLabel.setAngle(angle);
@@ -116,8 +118,6 @@ public class WaveAnimation extends Thread {
                 originalImageArray, this.imageHelper.getWidth(), this.imageHelper.getHeight());
 
         isPassFinish = true;
-        double step = Math.max(0.1, Math.abs(distortionRadiusValue.get() * Math.cos(angleRadians)));
-        step = Math.min(step, distortionRadiusValue.get());
 
         ArrayList<int[]> keyPoints = buildWaveFunctionKeyPoints(c, tan, step, corner);
 
