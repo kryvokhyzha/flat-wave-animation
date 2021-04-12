@@ -57,10 +57,10 @@ Two variants have to be implemented:
         - **Linear pixel offset (stretching)**. This variant resembled a water transfusion, but it is quite straightforward and its artificial nature is noticeable.
         - **Gaussian blur**. This algorithm is more complex in implementation (need to compute kernels) and shows worse simulation of wave propagation. 
       These options have many disadvantages, so I pick up own function manually:
-        - **Custom variant**. To my mind, this algorithm is the golden mean. It is simple in realization and most similar to water transfusion. Distortion function has the following formula:
+        - **Custom variant**. To my mind, this algorithm is the golden mean. It is simple in realization, and most similar to water transfusion. Distortion function has the following formula:
         <br><img src="https://latex.codecogs.com/svg.image?x_{distortion}&space;=&space;cos(x&space;&plus;&space;y)&space;*&space;R_{distortion}&space;&plus;&space;x" title="x_{distortion} = cos(x + y) * R_{distortion} + x" />
         <br><img src="https://latex.codecogs.com/svg.image?y_{distortion}&space;=&space;N(0,&space;1)&space;*&space;\frac{R_{distortion}}{2}&space;&plus;&space;y" title="y_{distortion} = N(0, 1) * \frac{R_{distortion}}{2} + y" /><br>
-        where N(0, 1) - normal Gaussian distribution
+        where N(0, 1) - normal Gaussian distribution.
    + Drawing a picture after applying distortion function.
    + In a case when all key points are outside the picture - go to the next pass (iteration).
    + Animation algorithm structure:
